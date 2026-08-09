@@ -37,7 +37,7 @@ não versionados (ver [ADR 004](docs/adr/004-estrategia-de-segredos.md)).
 | Máquina | Acer Aspire E1-571 reaproveitado (notebook) |
 | CPU | Intel Core i5-3230M, 2 núcleos / 4 threads |
 | RAM | 8 GB DDR3 |
-| Disco | 224 GB SSD (sistema, LVM) + 2 TB HD em `/mnt/hd2tb` |
+| Disco | 240 GB SSD (sistema, LVM) + 2 TB HD em `/mnt/hd2tb` |
 | SO | Ubuntu Server 26.04 LTS |
 | Rede | IP fixo via netplan, gateway na mesma `/24` |
 
