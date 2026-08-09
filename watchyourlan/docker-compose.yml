@@ -1,0 +1,11 @@
+services:
+  wyl:
+    image: aceberg/watchyourlan
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ~/docker/watchyourlan:/data/WatchYourLAN
+    environment:
+      TZ: America/Sao_Paulo
+      IFACES: enp2s0f0
+networks: {}

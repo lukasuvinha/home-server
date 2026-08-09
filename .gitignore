@@ -1,0 +1,150 @@
+# ============================================================
+# .gitignore — repositorio homelab (melchior)
+#
+# ESTRATEGIA: whitelist. Ignora tudo, libera so o explicito.
+# Motivo: ~/docker mistura configuracao (versionavel) com estado
+# de runtime (bancos, logs, chaves geradas pelos servicos). Cada
+# servico novo inventa arquivos proprios. Uma blacklist exigiria
+# revisao a cada servico adicionado e falharia em silencio.
+# Whitelist falha fechada: o desconhecido fica de fora.
+#
+# PARA VERSIONAR ALGO NOVO: adicione um "!" na secao 3.
+# Ver docs/adr/004-estrategia-de-segredos.md
+# ============================================================
+
+
+# ------------------------------------------------------------
+# 1. Ignora tudo
+# ------------------------------------------------------------
+*
+
+
+# ------------------------------------------------------------
+# 2. Reabre diretorios
+#    Sem isto o git nao desce na arvore e o "!" da secao 3 nao
+#    alcanca nada em subpasta.
+# ------------------------------------------------------------
+!*/
+
+
+# ------------------------------------------------------------
+# 3. Libera o que e publicavel
+# ------------------------------------------------------------
+
+# Raiz
+!.gitignore
+!README.md
+!CLAUDE.md
+
+# Documentacao
+!docs/**
+!**/*.md
+
+# Compose files
+!**/docker-compose.yml
+!**/docker-compose.yaml
+!**/compose.yml
+!**/compose.yaml
+
+# Templates de configuracao
+!**/*.example
+!**/*.sample
+!**/*.template
+
+
+# --- Configs de servico liberadas caso a caso ---
+#
+# Descomente cada linha DEPOIS de abrir o arquivo e confirmar que
+# nao ha credencial dentro. A ausencia de segredo hoje nao garante
+# a ausencia amanha: configurar um dashboard significa adicionar
+# API keys dos *arr.
+#
+# Recomendacao: configure Homepage e Glance usando substituicao por
+# variavel de ambiente desde o inicio. Assim os arquivos nascem
+# publicaveis e estas linhas podem ser descomentadas sem ressalva.
+#   Homepage: {{HOMEPAGE_VAR_NOME}}
+#   Glance:   ${NOME}
+#   Homarr:   guarda no proprio banco, nao ha caminho por env
+
+# DNS wildcard .home — unica evidencia de como o recurso funciona.
+# Contem IP privado e dominio interno, ambos permitidos na doc.
+#!pihole/etc-dnsmasq.d/*.conf
+
+# Dashboards (aguardando configuracao e decisao de qual sera o oficial)
+#!homepage/config/*.yaml
+#!homepage/config/custom.css
+#!homepage/config/custom.js
+#!glance/config/*.yml
+#!glance/assets/*.css
+
+# Outros
+#!watchyourlan/config_v2.yaml
+#!filebrowser/filebrowser/config/settings.json
+
+# NAO liberar: nginx-proxy-manager/data/nginx/**/*.conf
+# Sao arquivos GERADOS pelo NPM a partir do banco dele. Quem clonar o
+# repo nao consegue reconstruir nada a partir deles — o NPM regeraria
+# do proprio banco. A informacao util (hostname, destino, porta) vive
+# em docs/03-proxy-reverso.md como tabela.
+
+
+# ============================================================
+# 4. Cinto de seguranca
+#
+# No gitignore a ULTIMA regra que casa vence. Esta secao fica no
+# fim de proposito: mesmo que um "!" acima seja largo demais ou
+# escrito por engano, o que estiver aqui nunca sera versionado.
+# ============================================================
+
+# --- Segredos ---
+**/.env
+!**/.env.example
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+**/id_rsa*
+**/id_ed25519*
+**/id_ecdsa*
+**/keys.json
+**/cli_pw
+**/credentials
+**/letsencrypt/
+**/acme.json
+
+# --- Bancos de dados e estado de runtime ---
+# Fora do git por dois motivos: volume, e inconsistencia. Commit de
+# SQLite com -wal/-shm pendente enquanto o servico roda captura um
+# estado que nao restaura. Backup e responsabilidade do restic.
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.rdb
+*.frm
+*.ibd
+*.MAD
+*.MAI
+**/mariadb/
+**/redis/
+**/appdata/
+**/gravity_backups/
+**/config_backups/
+**/migration_backup*/
+
+# --- Logs e cache ---
+*.log
+*.log.*
+**/logs/
+**/listsCache/
+**/screenshots/
+**/run/
+**/fingerprint
+
+# --- Backups de editor e arquivos temporarios ---
+*.save
+*.bak
+*.swp
+*~

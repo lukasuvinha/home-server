@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  snowflake-proxy:
+    image: thetorproject/snowflake-proxy:latest
+    container_name: snowflake-proxy
+    network_mode: host
+    restart: unless-stopped
+    command: [
+      "-capacity", "10",            # Limita a 10 conexões simultâneas (evita gargalos)
+      "-log", "/dev/stdout"
+    ]

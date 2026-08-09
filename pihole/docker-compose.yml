@@ -1,0 +1,25 @@
+services:
+  pihole:
+    image: pihole/pihole:2026.07.2
+    container_name: pihole
+    hostname: pihole
+
+    env_file: .env
+
+    ports:
+      - "192.168.18.195:53:53/tcp"
+      - "192.168.18.195:53:53/udp"
+      - "8080:80/tcp"
+
+    environment:
+      TZ: 'America/Sao_Paulo'
+      FTLCONF_webserver_api_password: '${PIHOLE_WEBPASSWORD}'
+
+    volumes:
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+
+    cap_add:
+      - NET_ADMIN
+
+    restart: unless-stopped
