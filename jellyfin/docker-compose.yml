@@ -1,5 +1,4 @@
 version: "3.8"
-
 # ============================================================
 # Antes de subir, ajuste:
 #   1. PUID / PGID -> rode `id seu_usuario` no host pra pegar os certos
@@ -7,129 +6,98 @@ version: "3.8"
 #   3. /caminho/no/host -> onde as coisas vão ficar salvas no seu disco
 # ============================================================
 
-x-common-env: &common-env
+x-common-env: &a1
   PUID: 1000
   PGID: 1000
   TZ: America/Sao_Paulo
-
 networks:
   mediastack:
     driver: bridge
-
 services:
-
-  # -------------------------------------------------
-  # PLAYER — só lê a biblioteca final, nunca baixa nada
-  # -------------------------------------------------
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
     environment:
-      <<: *common-env
+      <<: *a1
     volumes:
       - /mnt/hd2tb/media-server/jellyfin/config:/config
       - /mnt/hd2tb/media-server/media/series:/data/series
       - /mnt/hd2tb/media-server/media/filmes:/data/filmes
     ports:
-      - "8096:8096"
+      - 8096:8096
     networks:
       - mediastack
     restart: unless-stopped
-
-  # -------------------------------------------------
-  # CLIENTE DE DOWNLOAD — quem efetivamente baixa
-  # -------------------------------------------------
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     environment:
-      <<: *common-env
+      <<: *a1
       WEBUI_PORT: 8080
     volumes:
       - /mnt/hd2tb/media-server/qbittorrent/config:/config
       - /mnt/hd2tb/media-server/downloads:/downloads
     ports:
-      - "8090:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
+      - 8090:8080
+      - 6881:6881
+      - 6881:6881/udp
     networks:
       - mediastack
     restart: unless-stopped
-
-  # -------------------------------------------------
-  # INDEXER CENTRAL — alimenta Sonarr e Radarr
-  # -------------------------------------------------
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     environment:
-      <<: *common-env
+      <<: *a1
     volumes:
       - /mnt/hd2tb/media-server/prowlarr/config:/config
     ports:
-      - "9696:9696"
+      - 9696:9696
     networks:
       - mediastack
     restart: unless-stopped
-
-  # -------------------------------------------------
-  # SÉRIES
-  # -------------------------------------------------
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     environment:
-      <<: *common-env
+      <<: *a1
     volumes:
       - /mnt/hd2tb/media-server/sonarr/config:/config
       - /mnt/hd2tb/media-server/media/series:/data/series
       - /mnt/hd2tb/media-server/downloads:/downloads
     ports:
-      - "8989:8989"
+      - 8989:8989
     networks:
       - mediastack
     restart: unless-stopped
-
-  # -------------------------------------------------
-  # FILMES
-  # -------------------------------------------------
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     environment:
-      <<: *common-env
+      <<: *a1
     volumes:
       - /mnt/hd2tb/media-server/radarr/config:/config
       - /mnt/hd2tb/media-server/media/filmes:/data/filmes
       - /mnt/hd2tb/media-server/downloads:/downloads
     ports:
-      - "7878:7878"
+      - 7878:7878
     networks:
       - mediastack
     restart: unless-stopped
-
-  # -------------------------------------------------
-  # LEGENDAS — roda depois que Sonarr/Radarr importam
-  # -------------------------------------------------
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
     environment:
-      <<: *common-env
+      <<: *a1
     volumes:
       - /mnt/hd2tb/media-server/bazarr/config:/config
       - /mnt/hd2tb/media-server/media/series:/data/series
       - /mnt/hd2tb/media-server/media/filmes:/data/filmes
     ports:
-      - "6767:6767"
+      - 6767:6767
     networks:
       - mediastack
     restart: unless-stopped
-
-  # -------------------------------------------------
-  # PORTAL DE PEDIDOS 
-  # (sucessor unificado do Jellyseerr/Overseerr)
-  # -------------------------------------------------
   seerr:
     image: ghcr.io/seerr-team/seerr:latest
     container_name: seerr
@@ -141,9 +109,10 @@ services:
     volumes:
       - /mnt/hd2tb/media-server/seerr/config:/app/config
     ports:
-      - "5055:5055"
+      - 5055:5055
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
+      test: wget --no-verbose --tries=1 --spider
+        http://localhost:5055/api/v1/settings/public || exit 1
       start_period: 20s
       timeout: 3s
       interval: 15s
@@ -154,4 +123,20 @@ services:
       - jellyfin
       - sonarr
       - radarr
+    restart: unless-stopped
+  flaresolverr:
+    image: flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FILE=${LOG_FILE:-none}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=America/Sao_Paulo
+    ports:
+      - ${PORT:-8191}:8191
+    volumes:
+      - /var/lib/flaresolver:/config
+    networks:
+      - mediastack
     restart: unless-stopped
