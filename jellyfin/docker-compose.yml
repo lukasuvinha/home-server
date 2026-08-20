@@ -136,7 +136,7 @@ services:
     ports:
       - ${PORT:-8191}:8191
     volumes:
-      - /var/lib/flaresolver:/config
+      - /mnt/hd2tb/media-server/flaresolverr/config:/config
     networks:
       - mediastack
     restart: unless-stopped
